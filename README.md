@@ -20,6 +20,54 @@ A Streamlit application that performs Retrieval-Augmented Generation (RAG) power
 Clone the repository and install dependencies:
 
 git clone https://github.com/your-username/your-repo.git
+
 cd your-repo
+
 pip install -r requirements.txt
+
+
+## ⚙️ Usage
+
+1. Place your PDF files inside a folder named `research_paper/` in the project root.
+2. Run the Streamlit app:
+3. Click the **"Document Embedding"** button to build the vector database.
+4. Enter a question in the input field to query your documents.
+5. View the AI-generated answer and the supporting document excerpts.
+
+## 🧪 Testing
+
+Basic manual testing:
+
+- Launch the app
+- Load research papers into `research_paper/`
+- Create vector embeddings using the button
+- Ask questions based on the content
+
+## 📁 Project Structure
+
+your-repo/
+├── app.py # Main Streamlit application
+├── research_paper/ # Folder containing PDF files
+├── requirements.txt # Required Python packages
+├── .env # Environment variables (API keys)
+└── README.md # This file
+
+---
+
+## 🛠️ Tech Stack
+
+- **Python 3**
+- **Streamlit** - Web interface
+- **LangChain** - Integration of LLMs and vector databases
+- **FAISS** - Vector similarity search
+- **OpenAI Embeddings** - Vector representation of document content
+- **Groq (Llama 3)** - Large Language Model for Q&A
+- **dotenv** - Environment variable loader
+
+---
+
+## 🤖 Model Info
+
+- **Embedding Model**: `OpenAI Embeddings`
+- **LLM**: `Llama3-8b-8192` (via Groq API)
 
