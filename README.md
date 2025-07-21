@@ -53,6 +53,8 @@ your-repo/
 ├── .env                # Environment variables (API keys)
 └── README.md           # This file
 
+
+```
 ---
 
 ## 🛠️ Tech Stack
