@@ -45,12 +45,13 @@ Basic manual testing:
 
 ## 📁 Project Structure
 
+```text
 your-repo/
-├── app.py # Main Streamlit application
-├── research_paper/ # Folder containing PDF files
-├── requirements.txt # Required Python packages
-├── .env # Environment variables (API keys)
-└── README.md # This file
+├── app.py              # Main Streamlit application
+├── research_paper/     # Folder containing PDF files
+├── requirements.txt    # Required Python packages
+├── .env                # Environment variables (API keys)
+└── README.md           # This file
 
 ---
 
