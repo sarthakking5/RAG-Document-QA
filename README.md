@@ -19,7 +19,7 @@ A Streamlit application that performs Retrieval-Augmented Generation (RAG) power
 
 Clone the repository and install dependencies:
 
-git clone [https://github.com/sarthakking5/RAG-Document-QA.git]
+git clone https://github.com/sarthakking5/RAG-Document-QA.git
 
 cd your-repo
 
