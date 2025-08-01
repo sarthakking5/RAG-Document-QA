@@ -1,5 +1,9 @@
-import streamlit as st
 import os
+from dotenv import load_dotenv
+load_dotenv()
+
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"  # Fix OpenMP multiple runtime error
+import streamlit as st
 from langchain_groq import ChatGroq
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.embeddings import OllamaEmbeddings
@@ -9,11 +13,13 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains import create_retrieval_chain
 from langchain_community.vectorstores import FAISS
 from langchain_community.document_loaders import PyPDFDirectoryLoader
-from dotenv import load_dotenv
-load_dotenv()
+
+
+from ranker import rerank_documents
+
 
 ##load the API KEYS
-os.environ['GROQ_API_KEY']=os.getenv("GROQ_API_KEY")
+#os.environ['GROQ_API_KEY']=os.getenv("GROQ_API_KEY")
 os.environ['OPENAI_API_KEY']=os.getenv("OPENAI_API_KEY")
 
 groq_api_key=os.getenv("GROQ_API_KEY")
@@ -71,17 +77,30 @@ if user_prompt:
     if "vectors" not in st.session_state or st.session_state.vectors is None:
         st.error("Please create the vector database first by clicking the 'Document Embedding' button.")
     else:
-        document_chain = create_stuff_documents_chain(llm, prompt)
-        retriever = st.session_state.vectors.as_retriever()
-        retrieval_chain = create_retrieval_chain(retriever, document_chain)
+        # Step 1: Retrieve Documents (Raw from Retriever)
+        retriever = st.session_state.vectors.as_retriever(search_kwargs={"k":8})
+        retrieved_docs=retriever.invoke(user_prompt)
 
+        # Step 2: Rerank the retrieved docs
+        reranked_docs=rerank_documents(user_prompt,retrieved_docs,top_n=3)
+        #retrieval_chain = create_retrieval_chain(retriever, document_chain)
+
+        # Step 3: Run the reranked docs through the document chain
         start = time.process_time()
-        response = retrieval_chain.invoke({'input': user_prompt})
+        
+        document_chain=create_stuff_documents_chain(llm,prompt)
+        response=document_chain.invoke({
+            "context":reranked_docs,
+            "input":user_prompt
+        })
+
+        #response = retrieval_chain.invoke({'input': user_prompt})
         print(f"Response time :{time.process_time() - start}")
 
-        st.write(response['answer'])
+        st.write(response)
 
         with st.expander("Document Similarity Search"):
-            for i, doc in enumerate(response['context']):
+            for i, doc in enumerate(reranked_docs):
+                st.write(f"Chunk {i+1}:")
                 st.write(doc.page_content)
                 st.write("---------------------------")

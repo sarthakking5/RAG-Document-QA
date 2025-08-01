@@ -16,3 +16,5 @@ langserve
 sse_starlette
 streamlit
 faiss-cpu
+transformers
+accelerate
