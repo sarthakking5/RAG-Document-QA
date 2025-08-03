@@ -1,6 +1,7 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
+
 # Load Model and Tokenizer
 model_name="BAAI/bge-reranker-base"
 
@@ -26,8 +27,16 @@ def rerank_documents(query,docs,top_n=3):
     with torch.no_grad():
         scores=reranker_model(**inputs).logits.squeeze(-1)
 
+
+
     # Sort by score
     scored_docs=list(zip(scores.tolist(),docs))
+
+    for score,doc in scored_docs:
+        if not hasattr(doc,"metadata"):
+            doc.metadata={}
+        doc.metadata['rerank_score']=score
+
     scored_docs.sort(key=lambda x:x[0],reverse=True)
 
     # Return top n docs

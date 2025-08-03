@@ -89,7 +89,7 @@ if user_prompt:
         #Combine both with weights
         hybrid_retrievers=EnsembleRetriever(
             retrievers=[vector_retriever,keyword_retriever],
-            weights=[0.6,0.4]
+            weights=[0.5,0.5]
         )
 
         retrieved_docs=hybrid_retrievers.get_relevant_documents(user_prompt)
@@ -120,9 +120,35 @@ if user_prompt:
         st.subheader("Answer")
         st.write(final_answer)
 
+        st.subheader("Comparison: Without vs With Reranking")
 
-        with st.expander("Document Similarity Search"):
+        col1,col2=st.columns(2)
+
+        with col1:
+            st.write("### Without Reranking")
+            for i, doc in enumerate(retrieved_docs[:3]):
+                st.write(f"Original Chunk {i+1}:")
+                st.write(doc.page_content[:300] + "...")  # truncate for readability
+                st.write(f"Original Score: {doc.metadata.get('rerank_score','N/A')}")
+                st.write("---")
+
+        with col2:
+            st.write("### With Reranking")
             for i, doc in enumerate(reranked_docs):
-                st.write(f"Chunk {i+1}:")
-                st.write(doc.page_content)
-                st.write("---------------------------")
+                 st.write(f"Reranked Chunk {i+1}:")
+                 st.write(doc.page_content[:300] + "...")
+                 st.write(f"Rerank Score: {doc.metadata.get('rerank_score','N/A')}")
+                 st.write("---")
+                         
+
+
+
+
+
+
+
+
+
+
+
+
