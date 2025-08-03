@@ -18,3 +18,4 @@ streamlit
 faiss-cpu
 transformers
 accelerate
+rank_bm25

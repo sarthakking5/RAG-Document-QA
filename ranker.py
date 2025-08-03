@@ -2,13 +2,18 @@ import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 # Load Model and Tokenizer
+model_name="BAAI/bge-reranker-base"
 
-reranker_model=AutoModelForSequenceClassification.from_pretrained("BAAI/bge-reranker-base")
-reranker_tokenizer=AutoTokenizer.from_pretrained("BAAI/bge-reranker-base")
+reranker_model=AutoModelForSequenceClassification.from_pretrained(
+    model_name,
+    device_map="auto",
+    torch_dtype=torch.float16,
+)
+reranker_tokenizer=AutoTokenizer.from_pretrained(model_name)
 
 
 def rerank_documents(query,docs,top_n=3):
-    pairs=[(query,doc.page_content) for doc in docs]
+    pairs = [(query, doc.page_content if hasattr(doc, "page_content") else str(doc)) for doc in docs]
 
     inputs=reranker_tokenizer(
         pairs,

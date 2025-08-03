@@ -13,7 +13,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains import create_retrieval_chain
 from langchain_community.vectorstores import FAISS
 from langchain_community.document_loaders import PyPDFDirectoryLoader
-
+from langchain_community.retrievers import BM25Retriever
+from langchain.retrievers import EnsembleRetriever
 
 from ranker import rerank_documents
 
@@ -62,6 +63,8 @@ def create_vector_embedding():
             st.session_state.final_documents,
             st.session_state.embeddings)
 
+
+
 st.title("RAG Document Q&A With Groq and Llama 3")
 
 user_prompt=st.text_input("Enter your query from the research papers")
@@ -78,8 +81,18 @@ if user_prompt:
         st.error("Please create the vector database first by clicking the 'Document Embedding' button.")
     else:
         # Step 1: Retrieve Documents (Raw from Retriever)
-        retriever = st.session_state.vectors.as_retriever(search_kwargs={"k":8})
-        retrieved_docs=retriever.invoke(user_prompt)
+       
+        #Create a BM25 retriever
+        keyword_retriever=BM25Retriever.from_documents(st.session_state.final_documents)
+        #Create a vector retriver
+        vector_retriever = st.session_state.vectors.as_retriever(search_kwargs={"k":5})
+        #Combine both with weights
+        hybrid_retrievers=EnsembleRetriever(
+            retrievers=[vector_retriever,keyword_retriever],
+            weights=[0.6,0.4]
+        )
+
+        retrieved_docs=hybrid_retrievers.get_relevant_documents(user_prompt)
 
         # Step 2: Rerank the retrieved docs
         reranked_docs=rerank_documents(user_prompt,retrieved_docs,top_n=3)
@@ -88,6 +101,8 @@ if user_prompt:
         # Step 3: Run the reranked docs through the document chain
         start = time.process_time()
         
+       #context_text = "\n\n".join([doc.page_content for doc in reranked_docs])
+
         document_chain=create_stuff_documents_chain(llm,prompt)
         response=document_chain.invoke({
             "context":reranked_docs,
@@ -97,7 +112,14 @@ if user_prompt:
         #response = retrieval_chain.invoke({'input': user_prompt})
         print(f"Response time :{time.process_time() - start}")
 
-        st.write(response)
+        if isinstance(response,dict):
+            final_answer=response.get('output_text',str(response))
+        else:
+            final_answer=str(response)
+
+        st.subheader("Answer")
+        st.write(final_answer)
+
 
         with st.expander("Document Similarity Search"):
             for i, doc in enumerate(reranked_docs):
